@@ -1,0 +1,8 @@
+<!-- operation types : 0 = ADDITION, 1 = MULTIPLICATION, 2 = HARD-CODED VALUE -->
+<Scenario>
+  <ID>CURVE.STRESS</ID>
+  <description>custom stress scenario for EUR swap curve</description>
+  <regExpression>^IR.EUR-EURIBOR.CASH,^IR.EUR-EURIBOR-6M.FRA,^IR.EUR-EURIBOR-6M.SWAP</regExpression>
+  <operationType>1,0,2</operationType>
+  <stressValue>1.25,0.015,0.05</stressValue>
+</Scenario>
