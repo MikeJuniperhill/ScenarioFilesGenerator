@@ -41,7 +41,6 @@ def main(configurations):
             market = baseMarket.copy(deep = True)
             ApplyScenario(tree, market)
             fileName = tree.findall('ID')[0].text
-            # todo: header rows NAME,BASEMARKET / DATE,07-Jan-2019
             market.to_csv(targetFolder + fileName + '.csv', index = False, header=False)
 
 # update path to your configurations xml file
