@@ -1,0 +1,49 @@
+import re, os
+import numpy as np
+import pandas as pd
+import xml.etree.cElementTree as et
+
+# apply all given scenario elements into market
+def ApplyScenario(tree, market):    
+    # extract scenario elements into lists
+    regExpressions = (tree.findall('regExpression')[0].text).split(',')
+    operationTypes = (tree.findall('operationType')[0].text).split(',')
+    stressValues = (tree.findall('stressValue')[0].text).split(',')
+    
+    # apply regex, update matched values, update dataframe object
+    for i in range(len(regExpressions)):
+        selection = pd.DataFrame(market.loc[market[0].str.contains(regExpressions[i])])
+        # operation type: 0 = ADDITION
+        if(operationTypes[i] == '0'):
+            selection[1] = selection[1] + float(stressValues[i])
+        # operation type: 1 = MULTIPLICATION
+        if(operationTypes[i] == '1'):
+            selection[1] = selection[1] * float(stressValues[i])
+        # operation type: 2 = HARD-CODED VALUE
+        if(operationTypes[i] == '2'):
+            selection[1] = float(stressValues[i])
+        market.update(selection)
+
+def main(configurations):
+    # read all program configurations    
+    tree = et.parse(configurations).getroot()
+    scenarioConfigurations = tree.findall('ScenarioConfigurationsPath')[0].text
+    sourceFile = tree.findall('SourceFilePath')[0].text
+    targetFolder = tree.findall('TargetFolderPath')[0].text
+
+    # read base market to data frame object
+    baseMarket = pd.read_csv(sourceFile, header = None)
+
+    # loop through all xml scenarios
+    for config in os.listdir(scenarioConfigurations):
+        if(config.endswith('.xml')):
+            tree = et.parse(scenarioConfigurations + config).getroot()
+            market = baseMarket.copy(deep = True)
+            ApplyScenario(tree, market)
+            fileName = tree.findall('ID')[0].text
+            # todo: header rows NAME,BASEMARKET / DATE,07-Jan-2019
+            market.to_csv(targetFolder + fileName + '.csv', index = False, header=False)
+
+# update path to your configurations xml file
+configurations = '../Configurations.xml'
+main(configurations)
